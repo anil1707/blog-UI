@@ -84,7 +84,7 @@ const PostPage = () => {
             objectFit: "cover",
             objectPosition: "center center",
           }}
-          src={"http://localhost:5000/" + postInfo.cover}
+          src={"https://blog-backend-i14c.onrender.com/" + postInfo.cover}
           alt="post image"
         />
         <div
