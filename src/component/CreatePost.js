@@ -1,5 +1,5 @@
-import { Box, Button, TextField } from "@mui/material";
-import React, { useContext, useState } from "react";
+import { Box, Button, CircularProgress, TextField } from "@mui/material";
+import React, { useState } from "react";
 import Nav from "./Nav";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -9,14 +9,19 @@ const CreatePost = () => {
   let navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
   const [files, setFiles] = useState("");
-  const [creatPost, setCreatPost] = useState({});
+  // const [creatPost, setCreatPost] = useState({});
+  const [isCreatePostClicked, setisCreatePostClicked] = useState(false);
   const handleTitle = (e) => {
     setTitle(e.target.value);
   };
   const handleSummary = (e) => {
     setSummary(e.target.value);
+  };
+  const handleCategory = (e) => {
+    setCategory(e.target.value);
   };
   const handleContent = (newValue) => {
     setContent(newValue);
@@ -26,19 +31,24 @@ const CreatePost = () => {
     setFiles(e.target.files);
   };
   const handleCreatePost = async () => {
-    const data = new FormData();
-    data.set("title", title);
-    data.set("summary", summary);
-    data.set("content", content);
-    data.set("files", files[0]);
-    let response = await fetch("/post/createPost", {
-      method: "post",
-      body: data,
-      credentials: "include",
-    });
-    let result = await response.json();
-    setCreatPost(result);
-    navigate("/");
+    if (files) {
+      setisCreatePostClicked(true);
+      const data = new FormData();
+      data.set("title", title);
+      data.set("summary", summary);
+      data.set("category", category);
+      data.set("content", content);
+      data.set("files", files[0]);
+      let response = await fetch("https://blog-backend-i14c.onrender.com/post/createPost", {
+        method: "post",
+        body: data,
+        credentials: "include",
+      });
+      await response.json();
+      // setCreatPost(result);
+
+      navigate("/");
+    }
   };
   return (
     <Box>
@@ -49,10 +59,10 @@ const CreatePost = () => {
             sx={{
               display: "flex",
               flexDirection: "column",
-              height: "23vh",
+              height: "30vh",
               justifyContent: "space-around",
             }}
-          >
+          > 
             <TextField
               placeholder="tile"
               value={title}
@@ -64,6 +74,11 @@ const CreatePost = () => {
               onChange={handleSummary}
             />
             <TextField type="file" onChange={handleFile} />
+            <TextField
+              placeholder="Category"
+              value={category}
+              onChange={handleCategory}
+            />
           </Box>
           <ReactQuill value={content} onChange={handleContent} />
           <Button
@@ -72,7 +87,13 @@ const CreatePost = () => {
             size="medium"
             onClick={handleCreatePost}
           >
-            Create Post
+            {!isCreatePostClicked ? (
+              "Create Post"
+            ) : (
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <CircularProgress sx={{ color: "red", marginRight: "10px" }} />{" "}
+              </Box>
+            )}
           </Button>
         </Box>
       </Box>
