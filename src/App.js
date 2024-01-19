@@ -3,7 +3,6 @@ import Home from "./component/Home";
 import { Routes, Route } from "react-router-dom";
 import Register from "./component/Register";
 import Login from "./component/Login";
-import Test from "./component/Test";
 import CreatePost from "./component/CreatePost";
 import PostPage from "./component/PostPage";
 import { createContext, useState } from "react";
@@ -24,7 +23,6 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/create" element={<CreatePost />} />
-          <Route path="test" element={<Test />} />
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/edit/:id" element={<EditPost/>} />
         </Routes>
