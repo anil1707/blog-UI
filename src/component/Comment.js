@@ -1,4 +1,4 @@
-import { Avatar, Box, InputBase, TextField, Typography } from "@mui/material";
+import { Avatar, Box, InputBase } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import SendTwoToneIcon from "@mui/icons-material/SendTwoTone";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +110,7 @@ const Comment = (props) => {
                   sx={{ width: "30px", height: "30px" }}
                   className="comment-avatar"
                 />
-                {isHovered && comments[item]._id == selectedComment && (
+                {isHovered && comments[item]._id === selectedComment && (
                   <UserDetail UserDetail={comments[item].user} />
                 )}
               </Box>
