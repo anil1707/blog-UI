@@ -1,46 +1,56 @@
 import {
+  Autocomplete,
   Avatar,
   Box,
+  TextField,
   Typography,
 } from "@mui/material";
+import logo from '../images/bloglogo.png'
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../App";
 import Popover from "@mui/material/Popover";
-import SearchComponent from "./SearchComponent";
+import SearchIcon from "@mui/icons-material/Search";
 
 const Nav = () => {
-  let { setAndGetEmail, email } = useContext(Context);
-  const [userName, setUserName] = useState(null);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [isSearchClicked] = useState(false);
+  let {
+    userDetail,
+    getUserDetail,
+    isSearchOpen,
+    setSearchOpenClose,
+    sendSearchText,
+    sendFilterText,
+    category
+  } = useContext(Context);
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const navigate = useNavigate();
 
-  const regiesterHandler = () => {
-    navigate("/register");
-  };
   const loginHandler = () => {
     navigate("/login");
   };
+
+  const getUserProfileData = async () => {
+    const response = await fetch("http://localhost:5000/user/profile", {
+      credentials: "include",
+    });
+
+    const userInfo = await response.json();
+    getUserDetail(userInfo.userData);
+  };
+
   useEffect(() => {
-      fetch("https://blog-backend-i14c.onrender.com/user/profile", {
-        credentials: "include",
-      }).then(response=>{
-        response.json().then(userInfo=>{
-          setUserName(userInfo.email);
-          setAndGetEmail(userInfo.email);
-        })
-      })
-  }, [setAndGetEmail]);
+    getUserProfileData();
+  }, []);
 
   let logoutHandler = async () => {
-    let response = await fetch("https://blog-backend-i14c.onrender.com/user/logout", {
+    let response = await fetch("http://localhost:5000/user/logout", {
       credentials: "include",
       method: "post",
     });
     response.json();
-    setUserName(null);
-    setAndGetEmail("");
+    getUserDetail("");
+    localStorage.setItem("loginStatus", false);
     navigate("/");
   };
 
@@ -54,36 +64,30 @@ const Nav = () => {
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-  // const handleSearchClose = () => {
-  //   setIsSearchClicked(false);
-  // };
-
-  const gapCalculator = () => {
-    if (userName && isSearchClicked) {
-      return "35vw";
-    } else if (userName && !isSearchClicked) {
-      return "50vw";
-    } else if (!userName && isSearchClicked) {
-      return "45vw";
-    } else if (!userName && !isSearchClicked) {
-      return "50vw";
+  const manageSearch = () => {
+    if (!isSearchOpen) {
+      setSearchOpenClose(true);
+    } else {
+      setSearchOpenClose(false);
+      sendSearchText("");
     }
   };
 
+  const handleCategoryOnChange = (e, value) => {
+    sendFilterText(value);
+  };
+
+  function onClickProfile() {
+    navigate(`/user-profile/${userDetail.email}`);
+    handleClose();
+  }
   return (
     <Box
       sx={{
-        width: "80vw",
+        width: "97.5vw",
         margin: "0 auto",
         display: "flex",
         justifyContent: "center",
-        gap:
-          !userName && isSearchClicked
-            ? "50vw"
-            : !isSearchClicked && userName
-            ? "50vw"
-            : "32vw",
-        
         alignItems: "center",
         marginBottom: "5vh",
         marginTop: "2vh",
@@ -93,30 +97,47 @@ const Nav = () => {
         background: "white",
         boxShadow: "1px 1px 20px #cccccc",
         padding: "15px",
+        gap: "50vw",
       }}
-      style={{gap: gapCalculator(),}}
     >
-      <Typography
-        variant={"h5"}
-        sx={{ cursor: "pointer" }}
+      <img src={logo}
+        style={{ cursor: "pointer", ":hover": { color: "#3333cc" }, width:"100px" }}
         onClick={() => navigate("/")}
-      >
-        My Blog
-      </Typography>
+        alt="logo"
+      />
+        
       <Box
         sx={{
           display: "flex",
           justifyContent: "end",
-          gap: "20px",
+          gap: "40px",
           alignItems: "center",
         }}
       >
-        {email && (
+        {userDetail?.email && (
           <>
-            {/* <SearchComponent /> */}
-            <Typography variant="h6">Category</Typography>
+            <SearchIcon
+              onClick={manageSearch}
+              sx={{
+                fontSize: "40px",
+                color: "gray",
+                cursor: "pointer",
+                ":hover": { color: "#3333cc" },
+              }}
+            />
+            <Autocomplete
+              disablePortal
+              id="combo-box-demo"
+              options={category}
+              variant="small"
+              sx={{ width: 250 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Category" />
+              )}
+              onChange={handleCategoryOnChange}
+            />
             <Typography
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", ":hover": { color: "#3333cc" } }}
               variant="h6"
               onClick={() => navigate("/create")}
             >
@@ -137,8 +158,12 @@ const Nav = () => {
                 justifyContent: "center",
               }}
             >
-              <Avatar>{userName && userName.split("@")[0][0]}</Avatar>
-              {userName && userName.split("@")[0]}
+              <Avatar>
+                {userDetail &&
+                  userDetail?.email &&
+                  userDetail?.email.split("@")[0][0]}
+              </Avatar>
+              {userDetail?.firstName && userDetail?.firstName}
             </Typography>
             <Popover
               id={id}
@@ -147,7 +172,7 @@ const Nav = () => {
               onClose={handleClose}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "-100px",
+                horizontal: -1,
               }}
             >
               <Box
@@ -165,6 +190,7 @@ const Nav = () => {
                     ":hover": { background: "#cecece" },
                     marginBottom: "10px",
                   }}
+                  onClick={() => onClickProfile()}
                 >
                   Profile
                 </Typography>
@@ -183,21 +209,39 @@ const Nav = () => {
           </>
         )}
 
-        {!email && (
+        {!userDetail?.email && (
           <>
-            <SearchComponent />
-            <Typography variant="h6">Category</Typography>
+            <SearchIcon
+              onClick={manageSearch}
+              sx={{
+                fontSize: "40px",
+                color: "gray",
+                cursor: "pointer",
+                ":hover": { color: "#3333cc" },
+              }}
+            />
+            <Autocomplete
+              disablePortal
+              id="combo-box-demo"
+              options={category}
+              variant="small"
+              sx={{ width: 250 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Category" />
+              )}
+              onChange={handleCategoryOnChange}
+            />
 
             <Typography
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", ":hover": { color: "#3333cc" } }}
               variant="h6"
-              onClick={regiesterHandler}
+              onClick={loginHandler}
             >
-              Register
+              Create Post
             </Typography>
             <Typography
               variant="h6"
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", ":hover": { color: "#3333cc" } }}
               onClick={loginHandler}
             >
               Login

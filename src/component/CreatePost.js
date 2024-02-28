@@ -4,6 +4,7 @@ import Nav from "./Nav";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const CreatePost = () => {
   let navigate = useNavigate();
@@ -12,7 +13,7 @@ const CreatePost = () => {
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
   const [files, setFiles] = useState("");
-  // const [creatPost, setCreatPost] = useState({});
+  const [photoLoader, setPhotoLoader] = useState(false);
   const [isCreatePostClicked, setisCreatePostClicked] = useState(false);
   const handleTitle = (e) => {
     setTitle(e.target.value);
@@ -27,28 +28,45 @@ const CreatePost = () => {
     setContent(newValue);
   };
 
-  const handleFile = (e) => {
-    setFiles(e.target.files);
+  // const handleFile = (e) => {
+  //   setFiles(e.target.files);
+  // };
+
+  const handleUploadFile = async (e) => {
+    setPhotoLoader(true);
+    let files = e.target.files;
+    const data = new FormData();
+    data.set("files", files[0]);
+
+    let response = await fetch("http://localhost:5000/post/uploadPhoto", {
+      method: "post",
+      body: data,
+      credentials: "include",
+    });
+
+    let result = await response.json();
+    setPhotoLoader(false);
+    setFiles(result.url);
   };
   const handleCreatePost = async () => {
-    if (files) {
-      setisCreatePostClicked(true);
-      const data = new FormData();
-      data.set("title", title);
-      data.set("summary", summary);
-      data.set("category", category);
-      data.set("content", content);
-      data.set("files", files[0]);
-      let response = await fetch("https://blog-backend-i14c.onrender.com/post/createPost", {
-        method: "post",
-        body: data,
-        credentials: "include",
-      });
-      await response.json();
-      // setCreatPost(result);
-
-      navigate("/");
+    if (localStorage.getItem("loginStatus") === "false") {
+      navigate("/login");
     }
+    setisCreatePostClicked(true);
+    const data = new FormData();
+    data.set("title", title);
+    data.set("summary", summary);
+    data.set("category", category);
+    data.set("content", content);
+    data.set("files", files);
+    let response = await fetch("http://localhost:5000/post/createPost", {
+      method: "post",
+      body: data,
+      credentials: "include",
+    });
+    await response.json();
+
+    navigate("/");
   };
   return (
     <Box>
@@ -62,7 +80,7 @@ const CreatePost = () => {
               height: "30vh",
               justifyContent: "space-around",
             }}
-          > 
+          >
             <TextField
               placeholder="tile"
               value={title}
@@ -73,7 +91,8 @@ const CreatePost = () => {
               value={summary}
               onChange={handleSummary}
             />
-            <TextField type="file" onChange={handleFile} />
+            {/* <TextField type="file" onChange={handleFile} /> */}
+
             <TextField
               placeholder="Category"
               value={category}
@@ -81,6 +100,54 @@ const CreatePost = () => {
             />
           </Box>
           <ReactQuill value={content} onChange={handleContent} />
+          <label
+            style={{
+              width: "14.3vw",
+              height: "18vh",
+              border: "1px dashed gray",
+              borderRadius: "20px",
+              margin: "10px 0",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+          >
+            {!files ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <TextField
+                  type="file"
+                  onChange={handleUploadFile}
+                  sx={{ display: "none" }}
+                  hidden
+                />
+                {!photoLoader ? (
+                  <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <CloudUploadIcon sx={{ fontSize: "50px" }} />
+                    Upload
+                  </Box>
+                ) : (
+                  <CircularProgress />
+                )}
+              </Box>
+            ) : (
+              <img
+                src={files}
+                style={{
+                  width: "14.3vw",
+                  height: "18vh",
+                  borderRadius: "20px",
+                }}
+                alt="post"
+              />
+            )}
+          </label>
           <Button
             sx={{ marginTop: "10px", width: "50vw" }}
             variant="contained"

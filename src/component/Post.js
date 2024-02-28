@@ -6,7 +6,6 @@ const Post = ({
   title,
   summary,
   cover,
-  content,
   createdAt,
   author,
   _id,
@@ -81,18 +80,21 @@ const Post = ({
             {formatISO9075(new Date(createdAt))}
           </Typography>
         </Box>
-        {/* {category && <Typography
+        {category && <Typography
           sx={{
             padding: "5px 10px",
             bgcolor: "#e6e6e6",
             borderRadius: "10px",
             display: "inline",
-            margin:"100px 0px"
+            margin:"100px 0px",
+            fontSize:"13px",
+            margin:"100px 0",
+            color:"gray"
           }}
         >
-          {category}
-        </Typography>} */}
-        <Typography sx={{ lineHeight: "1.4rem" }}>
+          Cartegory: {category}
+        </Typography>}
+        <Typography sx={{ lineHeight: "1.4rem", marginTop:"1vh" }}>
           {summary}
         </Typography>
       </Box>

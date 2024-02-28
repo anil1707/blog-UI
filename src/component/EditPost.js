@@ -4,6 +4,7 @@ import { Box, Button, TextField } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ReactQuill from "react-quill";
 import CircularProgress from "@mui/material/CircularProgress";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 const EditPost = () => {
   let { id } = useParams();
   const [title, setTitle] = useState("");
@@ -14,10 +15,12 @@ const EditPost = () => {
   const [postInfo, setPostInfo] = useState({});
   const [loader, setLoader] = useState(true);
   const [isClickedUpdate, setIsClickUpdate] = useState(false);
+  const [photoLoader, setPhotoLoader] = useState(false);
+  const [defaultImage, setDefaultImage] = useState({});
   const navigate = useNavigate();
   useEffect(() => {
     // const fetchData = async () => {
-    fetch(`https://blog-backend-i14c.onrender.com/post/${id}`, {
+    fetch(`http://localhost:5000/post/${id}`, {
       method: "get",
     }).then((response) => {
       response.json().then((result) => {
@@ -25,16 +28,17 @@ const EditPost = () => {
           setLoader(false);
         }
         if (result) {
-          setPostInfo(result);
-          setTitle(result.title);
-          setSummary(result.summary);
-          setContent(result.content);
+          setPostInfo(result.data);
+          setTitle(result.data.title);
+          setSummary(result.data.summary);
+          setContent(result.data.content);
+          setCategory(result.data.category);
+          setDefaultImage(result.data.cover);
         }
       });
     });
   }, [id]);
 
-  console.log("postinfo", postInfo);
   let handleTitle = (e) => {
     setTitle(e.target.value);
   };
@@ -55,36 +59,54 @@ const EditPost = () => {
     setContent(newContenet);
   };
 
-  let handleFile = (e) => {
-    setFiles(e.target.files);
-  };
+  // let handleFile = (e) => {
+  //   setFiles(e.target.files);
+  // };
 
   const handleEditPost = async () => {
     setIsClickUpdate(true);
-    const data = new FormData();
-    data.set("title", title);
-    data.set("summary", summary);
-    data.set("category", category);
-    data.set("content", content);
-    if (files?.[0]) data.set("files", files[0]);
+    let data = {};
+    data["title"] = title;
+    data["summary"] = summary;
+    data["category"] = category;
+    data["content"] = content;
+    if(files) data["files"] = files
+    else setFiles(defaultImage)
 
-    let response = await fetch(
-      `https://blog-backend-i14c.onrender.com/post/edit/${id}`,
-      {
-        method: "put",
-        body: data,
-        credentials: "include",
-      }
-    );
+    let response = await fetch(`http://localhost:5000/post/edit/${id}`, {
+      method: "put",
+      body: JSON.stringify(data),
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (response.ok) {
       navigate(`/`);
     }
   };
+  const handleUploadFile = async (e) => {
+    setPhotoLoader(true);
+    let files = e.target.files;
+    const data = new FormData();
+    data.set("files", files[0]);
+
+    let response = await fetch("http://localhost:5000/post/uploadPhoto", {
+      method: "post",
+      body: data,
+      credentials: "include",
+    });
+
+    let result = await response.json();
+    setPhotoLoader(false);
+    setFiles(result.url);
+  };
+
   return (
     <Box>
       <Nav />
-      {loader && (
+      {loader ? (
         <Box
           sx={{
             width: "80vw",
@@ -96,53 +118,116 @@ const EditPost = () => {
         >
           <CircularProgress />{" "}
         </Box>
-      )}
-      <Box>
-        <Box sx={{ width: "50vw", margin: "0 auto" }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              height: "23vh",
-              justifyContent: "space-around",
-            }}
-          >
-            <TextField
-              placeholder="tile"
-              value={title}
-              onChange={handleTitle}
-            />
-            <TextField
-              placeholder="Summary"
-              value={summary}
-              onChange={handleSummary}
-            />
-            <TextField type="file" onChange={handleFile} />
-            <TextField
-              placeholder="Category"
-              value={category}
-              onChange={handleCategory}
-            />
+      ) : (
+        <Box>
+          <Box sx={{ width: "50vw", margin: "0 auto" }}>
+            <h2
+              style={{
+                borderBottom: "1px solid gray",
+                textAlign: "center",
+                paddingBottom: "10px",
+              }}
+            >
+              Edit Post
+            </h2>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                height: "23vh",
+                justifyContent: "space-around",
+              }}
+            >
+              <TextField
+                placeholder="tile"
+                value={title}
+                onChange={handleTitle}
+              />
+              <TextField
+                placeholder="Summary"
+                value={summary}
+                onChange={handleSummary}
+              />
+              {/* <TextField type="file" onChange={handleFile} /> */}
+              <TextField
+                placeholder="Category"
+                value={category}
+                onChange={handleCategory}
+              />
+            </Box>
+            <ReactQuill value={content} onChange={handleContent} />
+            <label
+              style={{
+                width: "14.3vw",
+                height: "18vh",
+                border: "1px dashed gray",
+                borderRadius: "20px",
+                margin: "10px 0",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+            >
+              {!files ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <TextField
+                    type="file"
+                    onChange={handleUploadFile}
+                    sx={{ display: "none" }}
+                    hidden
+                  />
+                  {!photoLoader ? (
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <CloudUploadIcon sx={{ fontSize: "50px" }} />
+                      Upload
+                    </Box>
+                  ) : (
+                    <CircularProgress />
+                  )}
+                </Box>
+              ) : (
+                <img
+                  src={files}
+                  style={{
+                    width: "14.3vw",
+                    height: "18vh",
+                    borderRadius: "20px",
+                  }}
+                  alt="post"
+                />
+              )}
+            </label>
+            <Button
+              sx={{ marginTop: "10px", width: "50vw", marginBottom: "50px" }}
+              variant="contained"
+              size="medium"
+              onClick={handleEditPost}
+            >
+              {!isClickedUpdate ? (
+                "Update Post"
+              ) : (
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <CircularProgress
+                    style={{
+                      color: "white",
+                      marginRight: "10px",
+                      width: "25px",
+                      height: "25px",
+                    }}
+                  />{" "}
+                </Box>
+              )}
+            </Button>
           </Box>
-          <ReactQuill value={content} onChange={handleContent} />
-          <Button
-            sx={{ marginTop: "10px", width: "50vw", marginBottom: "50px" }}
-            variant="contained"
-            size="medium"
-            onClick={handleEditPost}
-          >
-            {!isClickedUpdate ? (
-              "Update Post"
-            ) : (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <CircularProgress
-                  sx={{ color: "red", marginRight: "10px", size: "small" }}
-                />{" "}
-              </Box>
-            )}
-          </Button>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 };
