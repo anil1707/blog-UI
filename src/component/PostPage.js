@@ -12,7 +12,6 @@ const PostPage = () => {
   const { userDetail } = useContext(Context);
   const navigate = useNavigate();
   const params = useParams();
-  const [, setIsLoggedIn] = useState(false);
   const [postInfo, setPostInfo] = useState({});
   const [loader, setLoader] = useState(true);
   const [open, setOpen] = useState(false);

@@ -1,5 +1,5 @@
 import { Box, IconButton, InputBase, Paper } from "@mui/material";
-import React, { useContext, useState } from "react";
+import React, {  useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 

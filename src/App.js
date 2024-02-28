@@ -9,7 +9,6 @@ import { createContext, useState } from "react";
 import EditPost from "./component/EditPost";
 import WrongPage from "./component/WrongPage";
 import OtherUserProfile from "./component/OtherUserProfile";
-import ScaltonForPost from "./component/ScaltonForPost";
 
 export let Context = createContext();
 
@@ -61,7 +60,6 @@ function App() {
             path="/user-profile/:email"
             element={<OtherUserProfile />}
           />
-          <Route path="/scalton" element={<ScaltonForPost />} />
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/edit/:id" element={<EditPost />} />
           <Route path="*" element={<WrongPage />} />
@@ -80,7 +78,6 @@ function App() {
             path="/user-profile/:email"
             element={<OtherUserProfile />}
           />
-          <Route path="/scalton" element={<ScaltonForPost />} />
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/edit/:id" element={<EditPost />} />
           <Route path="*" element={<WrongPage />} />
@@ -102,7 +99,6 @@ function App() {
 
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/edit/:id" element={<EditPost />} />
-          <Route path="/scalton" element={<ScaltonForPost />} />
           <Route path="*" element={<WrongPage />} />
         </Routes>
       );
