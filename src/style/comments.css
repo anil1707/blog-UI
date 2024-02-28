@@ -1,0 +1,22 @@
+
+.user_detail_container{
+    position: absolute;
+    top: 0px;
+    left: 31px;
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 2px 20px gray;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+}
+
+
+.comment-avatar:hover{
+    background-color: rgb(153, 150, 150);
+    /* display: block; */
+}

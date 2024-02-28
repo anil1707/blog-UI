@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Modal, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Nav from "./Nav";
@@ -6,16 +6,18 @@ import { formatISO9075 } from "date-fns";
 import "../App.css";
 import { Context } from "../App";
 import CircularProgress from "@mui/material/CircularProgress";
+import Comment from "./Comment";
 
 const PostPage = () => {
-  const { email } = useContext(Context);
+  const { userDetail } = useContext(Context);
   const navigate = useNavigate();
   const params = useParams();
   const [, setIsLoggedIn] = useState(false);
   const [postInfo, setPostInfo] = useState({});
   const [loader, setLoader] = useState(true);
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    fetch(`https://blog-backend-i14c.onrender.com/post/${params.id}`, {
+    fetch(`http://localhost:5000/post/${params.id}`, {
       method: "get",
       credentials: "include",
     }).then((response) => {
@@ -29,11 +31,11 @@ const PostPage = () => {
   }, [params.id]);
 
   const handleEditPost = () => {
-    if (email) {
+    if (userDetail?.email === postInfo?.data?.author) {
       navigate("/edit/" + params.id);
-      setIsLoggedIn(true);
+      // setIsLoggedIn(true);
     } else {
-      setIsLoggedIn(false);
+      // setIsLoggedIn(false);
     }
   };
 
@@ -47,6 +49,24 @@ const PostPage = () => {
     );
     await response.json();
     navigate("/");
+  };
+
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    // border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleCreatedBy = (data) => {
+    navigate("/user-profile/" + data);
   };
   if (!postInfo) return "";
   return (
@@ -71,13 +91,13 @@ const PostPage = () => {
             variant="h3"
             sx={{ textAlign: "center", margin: "0 0 5px" }}
           >
-            {postInfo.title}
+            {postInfo?.data?.title}
           </Typography>
-          {postInfo?.createdAt && (
+          {postInfo?.data?.createdAt && (
             <Typography
               sx={{ textAlign: "center", fontSize: "1rem", color: "#aaa" }}
             >
-              {formatISO9075(new Date(postInfo?.createdAt))}
+              {formatISO9075(new Date(postInfo?.data?.createdAt))}
             </Typography>
           )}
           <Typography
@@ -86,9 +106,11 @@ const PostPage = () => {
               marginBottom: "20px",
               fontSize: ".8rem",
               fontWeight: "bold",
+              cursor: "pointer ",
             }}
+            onClick={() => handleCreatedBy(postInfo?.data?.author)}
           >
-            by @{postInfo.author.split("@")[0]}
+            by @{postInfo?.data?.author.split("@")[0]}
           </Typography>
           <Box
             sx={{
@@ -98,7 +120,7 @@ const PostPage = () => {
               marginBottom: "20px",
             }}
           >
-            {email === postInfo?.author && (
+            {userDetail?.email === postInfo?.data?.author && (
               <Box
                 sx={{
                   width: "9vw",
@@ -113,15 +135,56 @@ const PostPage = () => {
                 >
                   Edit
                 </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  width="3vw"
-                  size="small"
-                  onClick={handleDelete}
-                >
-                  Delete
-                </Button>
+                <Box>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    width="3vw"
+                    size="small"
+                    onClick={handleOpen}
+                    // onClick={handleDelete}
+                  >
+                    Delete
+                  </Button>
+                  <Modal
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={style}>
+                      <Typography
+                        id="confimation-model"
+                        variant="h6"
+                        component="h2"
+                      >
+                        Are You sure want to delete?
+                      </Typography>
+                      <Box
+                        sx={{
+                          paddingTop: "50px",
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          sx={{ marginRight: "20px", width: "30%" }}
+                          onClick={handleClose}
+                        >
+                          No
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{ width: "30%" }}
+                          onClick={handleDelete}
+                        >
+                          Yes
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Modal>
+                </Box>
               </Box>
             )}
           </Box>
@@ -133,13 +196,15 @@ const PostPage = () => {
               objectFit: "cover",
               objectPosition: "center center",
             }}
-            src={postInfo.cover}
+            src={postInfo?.data?.cover}
             alt="post"
           />
           <div
             className="content"
-            dangerouslySetInnerHTML={{ __html: postInfo.content }}
+            dangerouslySetInnerHTML={{ __html: postInfo?.data.content }}
           />
+          <h2 style={{ color: "gray" }}>Comments: </h2>
+          <Comment postId={params.id} userEmail={userDetail?.email} />
         </Box>
       )}
     </Box>

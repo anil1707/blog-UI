@@ -1,43 +1,50 @@
-import { Box, TextField } from "@mui/material";
-import React, { useState } from "react";
+import { Box, IconButton, InputBase, Paper } from "@mui/material";
+import React, { useContext, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 
-const SearchComponent = () => {
-  const [isSearchClicked, setIsSearchClicked] = useState(false);
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      // Handle the click or any other action you want to perform
-      alert("Enter key pressed!");
-      // here call api for search
-    }
+const SearchComponent = ({ findSearchText }) => {
+  const [searchText, setSearchText] = useState("");
+  const handleSearchText = (e) => {
+    setSearchText(e.target.value);
+    findSearchText(e.target.value);
   };
+  const handleClearText = () => {
+    setSearchText("");
+    findSearchText("");
+  };
+
   return (
     <Box sx={{ display: "flex", justifyContent: "center" }}>
-      {!isSearchClicked ? (
-        <SearchIcon fontSize="large" onClick={() => setIsSearchClicked(true)} />
-      ) : (
-        <Box
+      <Box>
+        <Paper
+          component="form"
           sx={{
+            p: "2px 4px",
             display: "flex",
-            gap: "5px",
-            justifyContent: "center",
             alignItems: "center",
+            width: 600,
+            marginBottom: "60px",
+            border: "1px solid black",
           }}
         >
-          <SearchIcon
-            fontSize="large"
-            fontWeight="bolder"
-            onClick={() => setIsSearchClicked(false)}
+          <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
+            <SearchIcon />
+          </IconButton>
+          <InputBase
+            sx={{ ml: 1, flex: 1 }}
+            placeholder="Search blogs"
+            inputProps={{ "aria-label": "search blogs" }}
+            onChange={handleSearchText}
+            value={searchText}
           />
-          <TextField
-            size="small"
-            variant="outlined"
-            autoFocus
-            onKeyDown={handleKeyDown}
-            sx={{}}
-          />
-        </Box>
-      )}
+          {searchText && (
+            <IconButton type="button" sx={{ p: "10px" }} aria-label="clear">
+              <ClearIcon onClick={handleClearText} />
+            </IconButton>
+          )}
+        </Paper>
+      </Box>
     </Box>
   );
 };
