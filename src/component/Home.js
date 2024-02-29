@@ -5,8 +5,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import SearchComponent from "./SearchComponent";
 import { Context } from "../App";
 import HomeCard from "./HomeCard";
+import API_BASE_URL from "../config";
 
 const Home = () => {
+  console.log(process.env.REACT_APP_API_KEY)
   let {
     isSearchOpen,
     setSearchOpenClose,
@@ -19,41 +21,9 @@ const Home = () => {
   const [searchedPost, setSearchedPost] = useState([]);
   const [filteredPost, setFilteredPost] = useState([]);
   let [loader, setLoader] = useState(true);
-  useEffect(() => {
-    getAllPost();
-  }, []);
-
-  useEffect(() => {
-    const searchPost = (text) => {
-      let filtredPost;
-      if (Array.isArray(posts) && text !== "") {
-        filtredPost = posts?.filter((item) => {
-          let data = item.title?.toLowerCase();
-          return data.includes(text && text?.toLowerCase());
-        });
-      }
-
-      setSearchedPost(filtredPost);
-    };
-    searchPost(searchText);
-  }, [searchText]);
-
-  useEffect(() => {
-    const filterPostByCategory = (categoryItem) => {
-      let filteredPost;
-      if (Array.isArray(posts) && categoryItem) {
-        filteredPost = posts?.filter((item) => {
-          let data = item.category?.toLowerCase();
-          return data.includes(categoryItem?.toLowerCase());
-        });
-        setFilteredPost(filteredPost);
-      }
-    };
-    filterPostByCategory(filterBy);
-  }, [filterBy]);
 
   let getAllPost = async () => {
-    let response = await fetch("http://localhost:5000/post/getPost");
+    let response = await fetch(`${API_BASE_URL.base_url}/post/getPost`);
     let result = await response.json();
     let filterArr = [];
     result?.posts.filter((item) => {
@@ -68,6 +38,42 @@ const Home = () => {
       setLoader(false);
     }
   };
+  useEffect(() => {
+    getAllPost();
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    const searchPost = (text) => {
+      let filtredPost;
+      if (Array.isArray(posts) && text !== "") {
+        filtredPost = posts?.filter((item) => {
+          let data = item?.title?.toLowerCase();
+          return data.includes(text !== "" && text?.toLowerCase());
+        });
+      }
+
+      setSearchedPost(filtredPost);
+    };
+    searchPost(searchText);
+    // eslint-disable-next-line
+  }, [searchText]);
+
+  useEffect(() => {
+    const filterPostByCategory = (categoryItem) => {
+      let filteredPost;
+      if (Array.isArray(posts) && categoryItem) {
+        filteredPost = posts?.filter((item) => {
+          let data = item.category?.toLowerCase();
+          return data.includes(categoryItem?.toLowerCase());
+        });
+        setFilteredPost(filteredPost);
+      }
+    };
+    filterPostByCategory(filterBy);
+    // eslint-disable-next-line
+  }, [filterBy]);
+
   if (posts.length)
     posts.sort((a, b) => {
       return new Date(new Date(b.createdAt) - new Date(a.createdAt));

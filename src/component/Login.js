@@ -8,6 +8,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import InputAdornment from "@mui/material/InputAdornment";
 import CircularProgress from "@mui/material/CircularProgress";
+import API_BASE_URL from "../config";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const Login = () => {
       return setIsAllFieldFilled(true);
     }
     setIsLoading(true);
-    let response = await fetch("http://localhost:5000/user/login", {
+    let response = await fetch(`${API_BASE_URL.base_url}/user/login`, {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginData),

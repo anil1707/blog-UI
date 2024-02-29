@@ -1,5 +1,6 @@
 import { Box, Button, TextField } from "@mui/material";
 import React, { useState } from "react";
+import API_BASE_URL from "../config";
 
 const EditProfilePage = ({ setOpen, userDetail,setIsDataChanged }) => {
   const [userObj, setUserObj] = useState({
@@ -19,7 +20,7 @@ const EditProfilePage = ({ setOpen, userDetail,setIsDataChanged }) => {
   };
 
   const handleEditProfile = async () => {
-    fetch("http://localhost:5000/user/editProfile", {
+    fetch(`${API_BASE_URL.base_url}/user/editProfile`, {
       method: "put",
       headers: {
         "Content-Type": "application/json",

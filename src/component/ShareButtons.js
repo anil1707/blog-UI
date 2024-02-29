@@ -12,8 +12,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Box, Typography } from "@mui/material";
 
 const ShareButtons = (props) => {
-  const shareUrl = "https://your-website-url.com";
-  const title = "Your Title";
   const [isCopied, setIsCopied] = useState(false);
 
   setTimeout(() => {
@@ -43,7 +41,7 @@ const ShareButtons = (props) => {
           right: "0",
         }}
       >
-        <FacebookShareButton url={shareUrl} quote={title}>
+        <FacebookShareButton url={props.shareUrl} quote={props.title}>
           <FacebookIcon
             sx={{
               padding: "4px",
@@ -51,7 +49,7 @@ const ShareButtons = (props) => {
             }}
           />
         </FacebookShareButton>
-        <TwitterShareButton url={shareUrl} title={title}>
+        <TwitterShareButton url={props.shareUrl} title={props.title}>
           <TwitterIcon
             sx={{
               padding: "4px",
@@ -59,7 +57,7 @@ const ShareButtons = (props) => {
             }}
           />
         </TwitterShareButton>
-        <LinkedinShareButton url={shareUrl} title={title}>
+        <LinkedinShareButton url={props.shareUrl} title={props.title}>
           <LinkedInIcon
             sx={{
               padding: "4px",

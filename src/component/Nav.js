@@ -5,12 +5,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import logo from '../images/bloglogo.png'
+import logo from "../images/bloglogo.png";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../App";
 import Popover from "@mui/material/Popover";
 import SearchIcon from "@mui/icons-material/Search";
+import API_BASE_URL from "../config";
 
 const Nav = () => {
   let {
@@ -20,7 +21,7 @@ const Nav = () => {
     setSearchOpenClose,
     sendSearchText,
     sendFilterText,
-    category
+    category,
   } = useContext(Context);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -31,7 +32,7 @@ const Nav = () => {
   };
 
   const getUserProfileData = async () => {
-    const response = await fetch("http://localhost:5000/user/profile", {
+    const response = await fetch(`${API_BASE_URL.base_url}/user/profile`, {
       credentials: "include",
     });
 
@@ -41,10 +42,11 @@ const Nav = () => {
 
   useEffect(() => {
     getUserProfileData();
+    // eslint-disable-next-line
   }, []);
 
   let logoutHandler = async () => {
-    let response = await fetch("http://localhost:5000/user/logout", {
+    let response = await fetch(`${API_BASE_URL.base_url}/user/logout`, {
       credentials: "include",
       method: "post",
     });
@@ -100,12 +102,17 @@ const Nav = () => {
         gap: "50vw",
       }}
     >
-      <img src={logo}
-        style={{ cursor: "pointer", ":hover": { color: "#3333cc" }, width:"100px" }}
+      <img
+        src={logo}
+        style={{
+          cursor: "pointer",
+          ":hover": { color: "#3333cc" },
+          width: "100px",
+        }}
         onClick={() => navigate("/")}
         alt="logo"
       />
-        
+
       <Box
         sx={{
           display: "flex",

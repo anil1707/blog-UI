@@ -5,6 +5,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import API_BASE_URL from "../config";
 
 const CreatePost = () => {
   let navigate = useNavigate();
@@ -38,7 +39,7 @@ const CreatePost = () => {
     const data = new FormData();
     data.set("files", files[0]);
 
-    let response = await fetch("http://localhost:5000/post/uploadPhoto", {
+    let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
       method: "post",
       body: data,
       credentials: "include",
@@ -59,7 +60,7 @@ const CreatePost = () => {
     data.set("category", category);
     data.set("content", content);
     data.set("files", files);
-    let response = await fetch("http://localhost:5000/post/createPost", {
+    let response = await fetch(`${API_BASE_URL.base_url}/post/createPost`, {
       method: "post",
       body: data,
       credentials: "include",

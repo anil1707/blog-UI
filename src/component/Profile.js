@@ -3,6 +3,7 @@ import React, { useContext, useState } from "react";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
 import Nav from "./Nav";
 import { Context } from "../App";
+import API_BASE_URL from "../config";
 
 const Profile = () => {
   const { userDetail } = useContext(Context);
@@ -42,7 +43,7 @@ const Profile = () => {
     data.set("lastName", lastName);
     data.set("userName", userName);
   
-    const response = await fetch("http://localhost:5000/user/editProfile", {
+    const response = await fetch(`${API_BASE_URL.base_url}/user/editProfile`, {
       method: "put",
       body: data,
       credentials: "include",

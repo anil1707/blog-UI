@@ -13,6 +13,7 @@ import EditProfilePage from "./EditProfilePage";
 import { Context } from "../App";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
 import HomeCard from "./HomeCard";
+import API_BASE_URL from "../config";
 
 const OtherUserProfile = () => {
   const { userDetail, getUserDetail } = useContext(Context);
@@ -29,13 +30,13 @@ const OtherUserProfile = () => {
   const handleClose = () => setOpen(false);
   useEffect(() => {
     setIsLoadingUser(true);
-    fetch(`http://localhost:5000/post/getPost/${email}`).then((response) => {
+    fetch(`${API_BASE_URL.base_url}/post/getPost/${email}`).then((response) => {
       response.json().then((result) => {
         setPosts(result.posts);
       });
     });
 
-    fetch(`http://localhost:5000/user/otherUserProfile/${email}`).then(
+    fetch(`${API_BASE_URL.base_url}/user/otherUserProfile/${email}`).then(
       (response) => {
         response.json().then((result) => {
           setIsLoadingUser(false);
@@ -44,6 +45,7 @@ const OtherUserProfile = () => {
         });
       }
     );
+     // eslint-disable-next-line
   }, [isDataChanged, email]);
 
   const style = {
@@ -64,7 +66,7 @@ const OtherUserProfile = () => {
     const data = new FormData();
     data.set("files", files[0]);
 
-    let response = await fetch(`http://localhost:5000/post/uploadPhoto`, {
+    let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
       method: "post",
       body: data,
       credentials: "include",
@@ -74,7 +76,7 @@ const OtherUserProfile = () => {
     setPhotoLoader(false);
     setPic(result.url);
     let picReponse = await fetch(
-      `http://localhost:5000/user/editProfilePic/${email}`,
+      `${API_BASE_URL.base_url}/user/editProfilePic/${email}`,
       {
         method: "put",
         body: JSON.stringify({ pic: result.url }),
