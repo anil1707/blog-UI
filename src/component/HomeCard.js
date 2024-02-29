@@ -7,6 +7,7 @@ import ChatBubbleOutlineTwoToneIcon from "@mui/icons-material/ChatBubbleOutlineT
 import ShareIcon from "@mui/icons-material/Share";
 import { Context } from "../App";
 import ShareButtons from "./ShareButtons";
+import API_BASE_URL from "../config";
 
 const HomeCard = ({ item }) => {
   const { userDetail } = useContext(Context);
@@ -24,7 +25,7 @@ const HomeCard = ({ item }) => {
   };
   const handleLike = async () => {
     const response = await fetch(
-      `http://localhost:5000/post/like/${item?._id}?email=${userDetail?.email}&isLike=${isliked}`,
+      `${API_BASE_URL.base_url}/post/like/${item?._id}?email=${userDetail?.email}&isLike=${isliked}`,
       {
         method: "put",
         credentials: "include",
@@ -175,7 +176,7 @@ const HomeCard = ({ item }) => {
           />
           {isShareClicked ? (
             <ShareButtons
-              shareUrl={`http://localhost:3000/post/${item._id}`}
+              shareUrl={`${API_BASE_URL.base_url}/post/${item._id}`}
               title={item.title}
             />
           ) : (

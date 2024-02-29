@@ -21,14 +21,24 @@ const WrongPage = () => {
           boxShadow: "2px 2px 10px gray",
           display: "flex",
           flexDirection: "column",
-          alignItems:"center",
-          padding:"20px 0",
-          gap:"10px"
+          alignItems: "center",
+          padding: "20px 0",
+          gap: "10px",
         }}
       >
-        <Typography variant="h3" fontWeight={"bold"}>404</Typography>
-        <Typography variant="h5" fontWeight={"bold"}>Page Not Found</Typography>
-        <Button variant="contained" sx={{marginTop:"20px"}} onClick={()=>navigate("/")}>Back to Home</Button>
+        <Typography variant="h3" fontWeight={"bold"}>
+          404
+        </Typography>
+        <Typography variant="h5" fontWeight={"bold"}>
+          Page Not Found
+        </Typography>
+        <Button
+          variant="contained"
+          sx={{ marginTop: "20px" }}
+          onClick={() => navigate("/")}
+        >
+          Back to Home
+        </Button>
       </Box>
     </div>
   );

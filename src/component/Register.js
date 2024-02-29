@@ -15,6 +15,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import InputAdornment from "@mui/material/InputAdornment";
 import validator from "validator";
+import API_BASE_URL from "../config";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -58,7 +59,7 @@ const Register = () => {
       setIsLoading(false);
       return setIsPasswordMatched(true);
     }
-    let data = await fetch("http://localhost:5000/user/register", {
+    let data = await fetch(`${API_BASE_URL.base_url}/user/register`, {
       method: "post",
       headers: {
         "Content-Type": "application/json",

@@ -7,6 +7,7 @@ import "../App.css";
 import { Context } from "../App";
 import CircularProgress from "@mui/material/CircularProgress";
 import Comment from "./Comment";
+import API_BASE_URL from "../config";
 
 const PostPage = () => {
   const { userDetail } = useContext(Context);
@@ -16,7 +17,7 @@ const PostPage = () => {
   const [loader, setLoader] = useState(true);
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    fetch(`http://localhost:5000/post/${params.id}`, {
+    fetch(`${API_BASE_URL.base_url}/post/${params.id}`, {
       method: "get",
       credentials: "include",
     }).then((response) => {
@@ -40,7 +41,7 @@ const PostPage = () => {
 
   const handleDelete = async () => {
     let response = await fetch(
-      `http://localhost:5000/post/delete/${params.id}`,
+      `${API_BASE_URL.base_url}/post/delete/${params.id}`,
       {
         method: "delete",
         credentials: "include",

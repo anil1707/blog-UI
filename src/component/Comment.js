@@ -4,6 +4,7 @@ import SendTwoToneIcon from "@mui/icons-material/SendTwoTone";
 import { useNavigate } from "react-router-dom";
 import "../style/comments.css";
 import UserDetail from "./UserDetail";
+import API_BASE_URL from "../config";
 
 const Comment = (props) => {
   const [commentAdded, setCommentAdded] = useState(false);
@@ -35,7 +36,7 @@ const Comment = (props) => {
 
   useEffect(() => {
     const { postId } = props;
-    fetch("http://localhost:5000/post/getComments/" + postId, {
+    fetch(`${API_BASE_URL.base_url}/post/getComments/${postId}`, {
       method: "get",
       headers: {
         "Content-Type": "application/json",
@@ -48,7 +49,7 @@ const Comment = (props) => {
         setMessage("");
       });
     });
-  }, [commentAdded]);
+  }, [commentAdded, props]);
 
   const handleMessage = (e) => {
     setMessage(e.target.value);
@@ -57,7 +58,7 @@ const Comment = (props) => {
   const handleSendMessage = () => {
     if (message.trim() !== "")
       try {
-        fetch("http://localhost:5000/post/addComment", {
+        fetch(`${API_BASE_URL.base_url}/post/addComment`, {
           method: "post",
           credentials: "include",
           body: JSON.stringify({ comment: message, email: userEmail, postId }),

@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ReactQuill from "react-quill";
 import CircularProgress from "@mui/material/CircularProgress";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import API_BASE_URL from "../config";
 const EditPost = () => {
   let { id } = useParams();
   const [title, setTitle] = useState("");
@@ -20,7 +21,7 @@ const EditPost = () => {
   const navigate = useNavigate();
   useEffect(() => {
     // const fetchData = async () => {
-    fetch(`http://localhost:5000/post/${id}`, {
+    fetch(`${API_BASE_URL.base_url}/post/${id}`, {
       method: "get",
     }).then((response) => {
       response.json().then((result) => {
@@ -73,7 +74,7 @@ const EditPost = () => {
     if(files) data["files"] = files
     else setFiles(defaultImage)
 
-    let response = await fetch(`http://localhost:5000/post/edit/${id}`, {
+    let response = await fetch(`${API_BASE_URL.base_url}/post/edit/${id}`, {
       method: "put",
       body: JSON.stringify(data),
       credentials: "include",
@@ -92,7 +93,7 @@ const EditPost = () => {
     const data = new FormData();
     data.set("files", files[0]);
 
-    let response = await fetch("http://localhost:5000/post/uploadPhoto", {
+    let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
       method: "post",
       body: data,
       credentials: "include",
