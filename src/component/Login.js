@@ -37,12 +37,13 @@ const Login = () => {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginData),
-      credentials: "include",
+      // credentials: "include",
     });
     let data = await response.json();
 
     if (data.message === "Logged in successfully!") {
       localStorage.setItem("loginStatus", true);
+      localStorage.setItem("token", data.token);
       navigate("/");
     } else if (data.message === "Email or Password is wrong!") {
       setWrongCredential(true);
@@ -184,7 +185,9 @@ const Login = () => {
           {!isLoading ? (
             "Login"
           ) : (
-            <CircularProgress style={{ color: "white", width:"25px", height:"25px" }} />
+            <CircularProgress
+              style={{ color: "white", width: "25px", height: "25px" }}
+            />
           )}
         </Button>
 

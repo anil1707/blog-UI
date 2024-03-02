@@ -77,9 +77,10 @@ const EditPost = () => {
     let response = await fetch(`${API_BASE_URL.base_url}/post/edit/${id}`, {
       method: "put",
       body: JSON.stringify(data),
-      credentials: "include",
+      // credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        authorization:"Bearer " + localStorage.getItem("token")
       },
     });
 
@@ -96,7 +97,10 @@ const EditPost = () => {
     let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
       method: "post",
       body: data,
-      credentials: "include",
+      // credentials: "include",
+      headers:{
+        authorization:"Bearer "+localStorage.getItem("token")
+      }
     });
 
     let result = await response.json();

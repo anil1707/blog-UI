@@ -13,6 +13,7 @@ const Comment = (props) => {
   const [comments, setComments] = useState({});
   const [isHovered, setHovered] = useState(false);
   const [selectedComment, setSelectedComment] = useState();
+  const [isFocused, setIsFocused] = useState(false);
   const keys = Object.keys(comments);
   let style;
   if (keys.length > 0) {
@@ -40,8 +41,9 @@ const Comment = (props) => {
       method: "get",
       headers: {
         "Content-Type": "application/json",
+        authorization: "Bearer " + localStorage.getItem("token"),
       },
-      credentials: "include",
+      // credentials: "include",
     }).then((response) => {
       response.json().then((result) => {
         setComments(result.comments);
@@ -55,14 +57,23 @@ const Comment = (props) => {
     setMessage(e.target.value);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
+
   const handleSendMessage = () => {
     if (message.trim() !== "")
       try {
         fetch(`${API_BASE_URL.base_url}/post/addComment`, {
           method: "post",
-          credentials: "include",
+          // credentials: "include",
           body: JSON.stringify({ comment: message, email: userEmail, postId }),
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: "Bearer " + localStorage.getItem("token"),
+          },
         }).then((response) => {
           response.json().then((result) => {
             if (result.message === "You are not logged in, login first") {
@@ -87,6 +98,13 @@ const Comment = (props) => {
     setSelectedComment(null);
   };
 
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
   return (
     <div style={style}>
       {keys.length > 0 &&
@@ -131,19 +149,23 @@ const Comment = (props) => {
       <div
         style={{
           display: "flex",
-          border: "1px solid gray",
           alignItems: "center",
           padding: "5px 10px",
           borderRadius: "8px",
           marginTop: "20px",
+          border:isFocused ? "2px solid blue" :"1px solid gray",
           gap: "20px",
         }}
+        
       >
         <InputBase
           placeholder="Add comment..."
           fullWidth
           onChange={handleMessage}
           value={message}
+          onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
         />
         <SendTwoToneIcon
           sx={{
@@ -154,6 +176,7 @@ const Comment = (props) => {
             ":hover": {
               background: "#ddd",
             },
+            cursor: "pointer",
           }}
           onClick={handleSendMessage}
         />

@@ -19,7 +19,7 @@ const PostPage = () => {
   useEffect(() => {
     fetch(`${API_BASE_URL.base_url}/post/${params.id}`, {
       method: "get",
-      credentials: "include",
+      // credentials: "include",
     }).then((response) => {
       response.json().then((result) => {
         if (result) {
@@ -44,7 +44,10 @@ const PostPage = () => {
       `${API_BASE_URL.base_url}/post/delete/${params.id}`,
       {
         method: "delete",
-        credentials: "include",
+        // credentials: "include",
+        headers: {
+          authorization: "Bearer " + localStorage.getItem("token"),
+        },
       }
     );
     await response.json();
