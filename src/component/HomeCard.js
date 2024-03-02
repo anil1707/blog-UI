@@ -28,7 +28,10 @@ const HomeCard = ({ item }) => {
       `${API_BASE_URL.base_url}/post/like/${item?._id}?email=${userDetail?.email}&isLike=${isliked}`,
       {
         method: "put",
-        credentials: "include",
+        // credentials: "include",
+        headers: {
+          authorization: "Bearer " + localStorage.getItem("token"),
+        },
       }
     );
     const result = await response.json();
@@ -67,7 +70,7 @@ const HomeCard = ({ item }) => {
             width: "20vw",
             height: "23vh",
             objectFit: "cover",
-            borderTopLeftRadius: "8px", 
+            borderTopLeftRadius: "8px",
             borderTopRightRadius: "8px",
             cursor: "pointer",
           }}
@@ -176,7 +179,9 @@ const HomeCard = ({ item }) => {
           />
           {isShareClicked ? (
             <ShareButtons
-              shareUrl={`${API_BASE_URL.base_url}/post/${item._id}`}
+              shareUrl={`${"https://exquisite-mousse-a08a25.netlify.app"}/post/${
+                item._id
+              }`}
               title={item.title}
             />
           ) : (

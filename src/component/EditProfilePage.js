@@ -24,6 +24,7 @@ const EditProfilePage = ({ setOpen, userDetail,setIsDataChanged }) => {
       method: "put",
       headers: {
         "Content-Type": "application/json",
+        authorization:"Bearer "+localStorage.getItem("token"),
       },
       body: JSON.stringify({
         userName: userObj.userName,
@@ -31,7 +32,7 @@ const EditProfilePage = ({ setOpen, userDetail,setIsDataChanged }) => {
         lastName: userObj.lastName,
         email: userDetail.email,
       }),   
-      credentials: "include",
+      // credentials: "include",
     }).then((response) => {
       response.json().then((result) => {
         if(result){

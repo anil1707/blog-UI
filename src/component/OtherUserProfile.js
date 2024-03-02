@@ -28,6 +28,7 @@ const OtherUserProfile = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  console.log("userDetail", userDetail)
   useEffect(() => {
     setIsLoadingUser(true);
     fetch(`${API_BASE_URL.base_url}/post/getPost/${email}`).then((response) => {
@@ -45,7 +46,7 @@ const OtherUserProfile = () => {
         });
       }
     );
-     // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [isDataChanged, email]);
 
   const style = {
@@ -69,7 +70,10 @@ const OtherUserProfile = () => {
     let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
       method: "post",
       body: data,
-      credentials: "include",
+      // credentials: "include",
+      headers: {
+        authorization: "Bearer " + localStorage.getItem("token"),
+      },
     });
 
     let result = await response.json();
@@ -80,13 +84,15 @@ const OtherUserProfile = () => {
       {
         method: "put",
         body: JSON.stringify({ pic: result.url }),
-        credentials: "include",
+        // credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          authorization: "Bearer " + localStorage.getItem("token"),
         },
       }
     );
-    await picReponse.json();
+   await picReponse.json();
+
   };
 
   return (

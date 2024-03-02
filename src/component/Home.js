@@ -8,7 +8,6 @@ import HomeCard from "./HomeCard";
 import API_BASE_URL from "../config";
 
 const Home = () => {
-  console.log(process.env.REACT_APP_API_KEY)
   let {
     isSearchOpen,
     setSearchOpenClose,

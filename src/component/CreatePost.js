@@ -29,11 +29,10 @@ const CreatePost = () => {
     setContent(newValue);
   };
 
-  // const handleFile = (e) => {
-  //   setFiles(e.target.files);
-  // };
-
   const handleUploadFile = async (e) => {
+    if (localStorage.getItem("loginStatus") === "false") {
+      navigate("/login");
+    }
     setPhotoLoader(true);
     let files = e.target.files;
     const data = new FormData();
@@ -42,7 +41,9 @@ const CreatePost = () => {
     let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
       method: "post",
       body: data,
-      credentials: "include",
+      headers: {
+        authorization: "Bearer " + localStorage.getItem("token"),
+      },
     });
 
     let result = await response.json();
@@ -54,16 +55,21 @@ const CreatePost = () => {
       navigate("/login");
     }
     setisCreatePostClicked(true);
-    const data = new FormData();
-    data.set("title", title);
-    data.set("summary", summary);
-    data.set("category", category);
-    data.set("content", content);
-    data.set("files", files);
+    const data = {
+      title,
+      summary,
+      content,
+      category,
+      files,
+    };
     let response = await fetch(`${API_BASE_URL.base_url}/post/createPost`, {
       method: "post",
-      body: data,
-      credentials: "include",
+      body: JSON.stringify(data),
+      // credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: "Bearer " + localStorage.getItem("token"),
+      },
     });
     await response.json();
 

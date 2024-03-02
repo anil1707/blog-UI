@@ -33,10 +33,16 @@ const Nav = () => {
 
   const getUserProfileData = async () => {
     const response = await fetch(`${API_BASE_URL.base_url}/user/profile`, {
-      credentials: "include",
+      // credentials: "include",
+      headers: { authorization: "Bearer " + localStorage.getItem("token") },
     });
 
     const userInfo = await response.json();
+    if(userInfo.Error === "Please sign in"){
+      localStorage.setItem("token", "")
+      localStorage.setItem("loginStatus", "false")
+      getUserDetail(userInfo.Error)
+    }
     getUserDetail(userInfo.userData);
   };
 
@@ -47,12 +53,13 @@ const Nav = () => {
 
   let logoutHandler = async () => {
     let response = await fetch(`${API_BASE_URL.base_url}/user/logout`, {
-      credentials: "include",
+      // credentials: "include",
       method: "post",
     });
     response.json();
     getUserDetail("");
     localStorage.setItem("loginStatus", false);
+    localStorage.setItem("token", "");
     navigate("/");
   };
 

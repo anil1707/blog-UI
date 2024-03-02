@@ -39,17 +39,20 @@ const Profile = () => {
   const handleEdit = async () => {
     const data = new FormData();
     data.set("pic", pic[0]);
-    data.set("firstName", firstName); // Corrected typo here
+    data.set("firstName", firstName);
     data.set("lastName", lastName);
     data.set("userName", userName);
-  
+
     const response = await fetch(`${API_BASE_URL.base_url}/user/editProfile`, {
       method: "put",
       body: data,
-      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        authorzation: "Bearer " + localStorage.getItem("token"),
+      },
     });
-  
-    // Handle the response as needed (e.g., check for success or errors)
+
+    await response.json();
   };
 
   return (
