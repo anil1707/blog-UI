@@ -1,54 +1,95 @@
 import React, { useEffect, useState } from "react";
 import Nav from "./Nav";
-import { Box, Button, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ReactQuill from "react-quill";
-import CircularProgress from "@mui/material/CircularProgress";
+import "react-quill/dist/quill.snow.css";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import API_BASE_URL from "../config";
+
 const EditPost = () => {
-  let { id } = useParams();
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [files, setFiles] = useState("");
+
   const [postInfo, setPostInfo] = useState({});
   const [loader, setLoader] = useState(true);
-  const [isClickedUpdate, setIsClickUpdate] = useState(false);
-  const [photoLoader, setPhotoLoader] = useState(false);
-  const [defaultImage, setDefaultImage] = useState({});
-  const navigate = useNavigate();
+
+  const [isClickedUpdate, setIsClickUpdate] =
+    useState(false);
+
+  const [photoLoader, setPhotoLoader] =
+    useState(false);
+
+  const [defaultImage, setDefaultImage] =
+    useState("");
+
+  // ============================================
+  // Get Post
+  // ============================================
+
   useEffect(() => {
-    // const fetchData = async () => {
-    fetch(`${API_BASE_URL.base_url}/post/${id}`, {
-      method: "get",
-    }).then((response) => {
-      response.json().then((result) => {
-        if (result) {
-          setLoader(false);
+    const fetchPost = async () => {
+      try {
+        setLoader(true);
+
+        const response = await fetch(
+          `${API_BASE_URL.base_url}/post/${id}`,
+          {
+            method: "GET",
+          }
+        );
+
+        const result = await response.json();
+
+        if (result?.data) {
+          const post = result.data;
+
+          setPostInfo(post);
+
+          setTitle(post.title || "");
+          setSummary(post.summary || "");
+          setContent(post.content || "");
+          setCategory(post.category || "");
+
+          setDefaultImage(post.cover || "");
+
+          // Show existing image initially
+          setFiles(post.cover || "");
         }
-        if (result) {
-          setPostInfo(result.data);
-          setTitle(result.data.title);
-          setSummary(result.data.summary);
-          setContent(result.data.content);
-          setCategory(result.data.category);
-          setDefaultImage(result.data.cover);
-        }
-      });
-    });
+      } catch (error) {
+        console.error(
+          "Failed to fetch post:",
+          error
+        );
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    fetchPost();
   }, [id]);
 
-  let handleTitle = (e) => {
+  // ============================================
+  // Input Handlers
+  // ============================================
+
+  const handleTitle = (e) => {
     setTitle(e.target.value);
   };
 
-  let handleSummary = (e) => {
-    if (postInfo) {
-      setSummary(postInfo.summary);
-    }
-
+  const handleSummary = (e) => {
     setSummary(e.target.value);
   };
 
@@ -56,183 +97,566 @@ const EditPost = () => {
     setCategory(e.target.value);
   };
 
-  let handleContent = (newContenet) => {
-    setContent(newContenet);
+  const handleContent = (newContent) => {
+    setContent(newContent);
   };
 
-  // let handleFile = (e) => {
-  //   setFiles(e.target.files);
-  // };
+  // ============================================
+  // Upload Image
+  // ============================================
 
-  const handleEditPost = async () => {
-    setIsClickUpdate(true);
-    let data = {};
-    data["title"] = title;
-    data["summary"] = summary;
-    data["category"] = category;
-    data["content"] = content;
-    if(files) data["files"] = files
-    else setFiles(defaultImage)
+  const handleUploadFile = async (e) => {
+    const selectedFile =
+      e.target.files?.[0];
 
-    let response = await fetch(`${API_BASE_URL.base_url}/post/edit/${id}`, {
-      method: "put",
-      body: JSON.stringify(data),
-      // credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        authorization:"Bearer " + localStorage.getItem("token")
-      },
-    });
+    if (!selectedFile) {
+      return;
+    }
 
-    if (response.ok) {
-      navigate(`/`);
+    try {
+      setPhotoLoader(true);
+
+      const data = new FormData();
+
+      data.set("files", selectedFile);
+
+      const response = await fetch(
+        `${API_BASE_URL.base_url}/post/uploadPhoto`,
+        {
+          method: "POST",
+
+          body: data,
+
+          headers: {
+            authorization:
+              "Bearer " +
+              localStorage.getItem("token"),
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      setFiles(result.url);
+    } catch (error) {
+      console.error(
+        "Image upload failed:",
+        error
+      );
+    } finally {
+      setPhotoLoader(false);
     }
   };
-  const handleUploadFile = async (e) => {
-    setPhotoLoader(true);
-    let files = e.target.files;
-    const data = new FormData();
-    data.set("files", files[0]);
 
-    let response = await fetch(`${API_BASE_URL.base_url}/post/uploadPhoto`, {
-      method: "post",
-      body: data,
-      // credentials: "include",
-      headers:{
-        authorization:"Bearer "+localStorage.getItem("token")
+  // ============================================
+  // Update Post
+  // ============================================
+
+  const handleEditPost = async () => {
+    try {
+      setIsClickUpdate(true);
+
+      const data = {
+        title,
+        summary,
+        category,
+        content,
+
+        // Use new image if uploaded,
+        // otherwise keep existing image.
+        files: files || defaultImage,
+      };
+
+      const response = await fetch(
+        `${API_BASE_URL.base_url}/post/edit/${id}`,
+        {
+          method: "PUT",
+
+          body: JSON.stringify(data),
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            authorization:
+              "Bearer " +
+              localStorage.getItem("token"),
+          },
+        }
+      );
+
+      if (response.ok) {
+        navigate(`/post/${id}`);
+      } else {
+        console.error(
+          "Failed to update post"
+        );
+
+        setIsClickUpdate(false);
       }
-    });
+    } catch (error) {
+      console.error(
+        "Update post failed:",
+        error
+      );
 
-    let result = await response.json();
-    setPhotoLoader(false);
-    setFiles(result.url);
+      setIsClickUpdate(false);
+    }
   };
 
-  return (
-    <Box>
-      <Nav />
-      {loader ? (
+  // ============================================
+  // Loading
+  // ============================================
+
+  if (loader) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        <Nav />
+
         <Box
           sx={{
-            width: "80vw",
-            margin: "0 auto",
+            minHeight: "50vh",
+
             display: "flex",
+
             justifyContent: "center",
+
             alignItems: "center",
           }}
         >
-          <CircularProgress />{" "}
+          <CircularProgress />
         </Box>
-      ) : (
-        <Box>
-          <Box sx={{ width: "50vw", margin: "0 auto" }}>
-            <h2
+      </Box>
+    );
+  }
+
+  // ============================================
+  // UI
+  // ============================================
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+
+        minHeight: "100vh",
+
+        overflowX: "hidden",
+
+        backgroundColor: "#fafafa",
+      }}
+    >
+      <Nav />
+
+      {/* ==========================================
+          MAIN CONTAINER
+      =========================================== */}
+
+      <Box
+        sx={{
+          width: {
+            xs: "calc(100% - 32px)",
+            sm: "90%",
+            md: "80%",
+            lg: "900px",
+          },
+
+          maxWidth: "900px",
+
+          margin: {
+            xs: "25px auto 40px",
+            sm: "35px auto 50px",
+            md: "45px auto 60px",
+          },
+        }}
+      >
+        {/* ========================================
+            PAGE TITLE
+        ========================================= */}
+
+        <Typography
+          component="h1"
+          sx={{
+            fontSize: {
+              xs: "24px",
+              sm: "28px",
+              md: "32px",
+            },
+
+            fontWeight: 700,
+
+            color: "#222",
+
+            textAlign: "center",
+
+            paddingBottom: "15px",
+
+            marginBottom: {
+              xs: "18px",
+              sm: "24px",
+            },
+
+            borderBottom:
+              "1px solid #e0e0e0",
+          }}
+        >
+          Edit Post
+        </Typography>
+
+        {/* ========================================
+            BASIC DETAILS
+        ========================================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+
+            flexDirection: "column",
+
+            gap: {
+              xs: "14px",
+              sm: "18px",
+            },
+
+            marginBottom: {
+              xs: "20px",
+              sm: "24px",
+            },
+          }}
+        >
+          {/* Title */}
+
+          <TextField
+            fullWidth
+            label="Title"
+            placeholder="Enter post title"
+            value={title}
+            onChange={handleTitle}
+          />
+
+          {/* Summary */}
+
+          <TextField
+            fullWidth
+            label="Summary"
+            placeholder="Enter post summary"
+            value={summary}
+            onChange={handleSummary}
+            multiline
+            minRows={2}
+            maxRows={4}
+          />
+
+          {/* Category */}
+
+          <TextField
+            fullWidth
+            label="Category"
+            placeholder="Enter category"
+            value={category}
+            onChange={handleCategory}
+          />
+        </Box>
+
+        {/* ========================================
+            RICH TEXT EDITOR
+        ========================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+
+            marginBottom: {
+              xs: "20px",
+              sm: "24px",
+            },
+
+            "& .ql-toolbar": {
+              borderTopLeftRadius: "8px",
+
+              borderTopRightRadius: "8px",
+
+              backgroundColor: "#fafafa",
+
+              overflowX: "auto",
+            },
+
+            "& .ql-container": {
+              minHeight: {
+                xs: "250px",
+                sm: "300px",
+                md: "350px",
+              },
+
+              fontSize: {
+                xs: "14px",
+                sm: "15px",
+              },
+
+              borderBottomLeftRadius:
+                "8px",
+
+              borderBottomRightRadius:
+                "8px",
+
+              backgroundColor: "#fff",
+            },
+
+            "& .ql-editor": {
+              minHeight: {
+                xs: "250px",
+                sm: "300px",
+                md: "350px",
+              },
+            },
+          }}
+        >
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={handleContent}
+          />
+        </Box>
+
+        {/* ========================================
+            COVER IMAGE
+        ========================================= */}
+
+        <Box
+          sx={{
+            marginBottom: "20px",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "15px",
+
+              fontWeight: 600,
+
+              marginBottom: "8px",
+            }}
+          >
+            Cover Image
+          </Typography>
+
+          <Box
+            component="label"
+            sx={{
+              width: {
+                xs: "100%",
+                sm: "280px",
+                md: "300px",
+              },
+
+              height: {
+                xs: "180px",
+                sm: "190px",
+                md: "200px",
+              },
+
+              border:
+                "2px dashed #bdbdbd",
+
+              borderRadius: "12px",
+
+              display: "flex",
+
+              flexDirection: "column",
+
+              justifyContent: "center",
+
+              alignItems: "center",
+
+              cursor: "pointer",
+
+              overflow: "hidden",
+
+              backgroundColor: "#fff",
+
+              transition:
+                "border-color 0.2s ease, background-color 0.2s ease",
+
+              "&:hover": {
+                borderColor: "#3333cc",
+
+                backgroundColor:
+                  "#fafaff",
+              },
+            }}
+          >
+            {/* Hidden file input */}
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleUploadFile}
               style={{
-                borderBottom: "1px solid gray",
-                textAlign: "center",
-                paddingBottom: "10px",
+                display: "none",
               }}
-            >
-              Edit Post
-            </h2>
+            />
+
+            {/* Uploading */}
+
+            {photoLoader ? (
+              <CircularProgress />
+
+            ) : files ? (
+              /* Existing / New Image */
+
+              <Box
+                component="img"
+                src={files}
+                alt="post"
+                sx={{
+                  width: "100%",
+
+                  height: "100%",
+
+                  objectFit: "cover",
+
+                  display: "block",
+                }}
+              />
+
+            ) : (
+              /* Upload */
+
+              <Box
+                sx={{
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  justifyContent:
+                    "center",
+
+                  alignItems: "center",
+
+                  gap: "6px",
+
+                  color: "#666",
+                }}
+              >
+                <CloudUploadIcon
+                  sx={{
+                    fontSize: {
+                      xs: "42px",
+                      sm: "48px",
+                    },
+
+                    color: "#555",
+                  }}
+                />
+
+                <Typography
+                  sx={{
+                    fontSize: "14px",
+
+                    fontWeight: 500,
+                  }}
+                >
+                  Click to upload
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: "12px",
+
+                    color: "#999",
+                  }}
+                >
+                  JPG, PNG, JPEG
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+
+        {/* ========================================
+            UPDATE BUTTON
+        ========================================= */}
+
+        <Button
+          variant="contained"
+          fullWidth
+          size="large"
+          onClick={handleEditPost}
+          disabled={isClickedUpdate}
+          sx={{
+            marginTop: "10px",
+
+            marginBottom: "20px",
+
+            height: {
+              xs: "46px",
+              sm: "48px",
+            },
+
+            borderRadius: "8px",
+
+            textTransform: "none",
+
+            fontSize: {
+              xs: "15px",
+              sm: "16px",
+            },
+
+            fontWeight: 600,
+
+            backgroundColor:
+              "#3333cc",
+
+            "&:hover": {
+              backgroundColor:
+                "#2929a8",
+            },
+          }}
+        >
+          {!isClickedUpdate ? (
+            "Update Post"
+          ) : (
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                height: "23vh",
-                justifyContent: "space-around",
-              }}
-            >
-              <TextField
-                placeholder="tile"
-                value={title}
-                onChange={handleTitle}
-              />
-              <TextField
-                placeholder="Summary"
-                value={summary}
-                onChange={handleSummary}
-              />
-              {/* <TextField type="file" onChange={handleFile} /> */}
-              <TextField
-                placeholder="Category"
-                value={category}
-                onChange={handleCategory}
-              />
-            </Box>
-            <ReactQuill value={content} onChange={handleContent} />
-            <label
-              style={{
-                width: "14.3vw",
-                height: "18vh",
-                border: "1px dashed gray",
-                borderRadius: "20px",
-                margin: "10px 0",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
+
                 alignItems: "center",
-                cursor: "pointer",
+
+                gap: "10px",
               }}
             >
-              {!files ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <TextField
-                    type="file"
-                    onChange={handleUploadFile}
-                    sx={{ display: "none" }}
-                    hidden
-                  />
-                  {!photoLoader ? (
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
-                      <CloudUploadIcon sx={{ fontSize: "50px" }} />
-                      Upload
-                    </Box>
-                  ) : (
-                    <CircularProgress />
-                  )}
-                </Box>
-              ) : (
-                <img
-                  src={files}
-                  style={{
-                    width: "14.3vw",
-                    height: "18vh",
-                    borderRadius: "20px",
-                  }}
-                  alt="post"
-                />
-              )}
-            </label>
-            <Button
-              sx={{ marginTop: "10px", width: "50vw", marginBottom: "50px" }}
-              variant="contained"
-              size="medium"
-              onClick={handleEditPost}
-            >
-              {!isClickedUpdate ? (
-                "Update Post"
-              ) : (
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <CircularProgress
-                    style={{
-                      color: "white",
-                      marginRight: "10px",
-                      width: "25px",
-                      height: "25px",
-                    }}
-                  />{" "}
-                </Box>
-              )}
-            </Button>
-          </Box>
-        </Box>
-      )}
+              <CircularProgress
+                sx={{
+                  color: "#fff",
+
+                  width:
+                    "23px !important",
+
+                  height:
+                    "23px !important",
+                }}
+              />
+
+              <Typography
+                component="span"
+                sx={{
+                  color: "#fff",
+
+                  fontSize: "14px",
+                }}
+              >
+                Updating...
+              </Typography>
+            </Box>
+          )}
+        </Button>
+      </Box>
     </Box>
   );
 };

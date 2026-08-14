@@ -1,14 +1,13 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import Nav from "./Nav";
-import CircularProgress from "@mui/material/CircularProgress";
 import SearchComponent from "./SearchComponent";
 import { Context } from "../App";
 import HomeCard from "./HomeCard";
 import API_BASE_URL from "../config";
 
 const Home = () => {
-  let {
+  const {
     isSearchOpen,
     setSearchOpenClose,
     searchText,
@@ -16,159 +15,325 @@ const Home = () => {
     sendSearchText,
     setCategoryItem,
   } = useContext(Context);
-  const [posts, setPosts] = useState({});
+
+  const [posts, setPosts] = useState([]);
   const [searchedPost, setSearchedPost] = useState([]);
   const [filteredPost, setFilteredPost] = useState([]);
-  let [loader, setLoader] = useState(true);
+  const [loader, setLoader] = useState(true);
 
-  let getAllPost = async () => {
-    let response = await fetch(`${API_BASE_URL.base_url}/post/getPost`);
-    let result = await response.json();
-    let filterArr = [];
-    result?.posts.filter((item) => {
-      if (!filterArr.includes(item?.category)) {
-        filterArr.push(item?.category);
-      }
-      setCategoryItem(filterArr);
-      return 0;
-    });
-    setPosts([...result.posts]);
-    if (result.posts) {
+  // ================================
+  // Get All Posts
+  // ================================
+
+  const getAllPost = async () => {
+    try {
+      setLoader(true);
+
+      const response = await fetch(
+        `${API_BASE_URL.base_url}/post/getPost`
+      );
+
+      const result = await response.json();
+
+      const postData = result?.posts || [];
+
+      // Get unique categories
+      const categories = [
+        ...new Set(
+          postData
+            .map((item) => item?.category)
+            .filter(Boolean)
+        ),
+      ];
+
+      setCategoryItem(categories);
+      setPosts(postData);
+    } catch (error) {
+      console.error("Error while fetching posts:", error);
+    } finally {
       setLoader(false);
     }
   };
+
   useEffect(() => {
     getAllPost();
+
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
-    const searchPost = (text) => {
-      let filtredPost;
-      if (Array.isArray(posts) && text !== "") {
-        filtredPost = posts?.filter((item) => {
-          let data = item?.title?.toLowerCase();
-          return data.includes(text !== "" && text?.toLowerCase());
-        });
-      }
-
-      setSearchedPost(filtredPost);
-    };
-    searchPost(searchText);
-    // eslint-disable-next-line
-  }, [searchText]);
+  // ================================
+  // Search Posts
+  // ================================
 
   useEffect(() => {
-    const filterPostByCategory = (categoryItem) => {
-      let filteredPost;
-      if (Array.isArray(posts) && categoryItem) {
-        filteredPost = posts?.filter((item) => {
-          let data = item.category?.toLowerCase();
-          return data.includes(categoryItem?.toLowerCase());
-        });
-        setFilteredPost(filteredPost);
-      }
-    };
-    filterPostByCategory(filterBy);
-    // eslint-disable-next-line
-  }, [filterBy]);
+    const text = String(searchText || "")
+      .trim()
+      .toLowerCase();
 
-  if (posts.length)
-    posts.sort((a, b) => {
-      return new Date(new Date(b.createdAt) - new Date(a.createdAt));
+    if (!text) {
+      setSearchedPost([]);
+      return;
+    }
+
+    const result = posts.filter((item) => {
+      const title = String(
+        item?.title || ""
+      ).toLowerCase();
+
+      return title.includes(text);
     });
 
-  if (filteredPost.length > 0 && filterBy) {
-    setSearchOpenClose(false);
-    return (
-      <Box>
-        <Nav />
-        <Box
-          sx={{
-            maxWidth: "90vw",
-            marginLeft: "100px",
-            display: "grid",
-            gridTemplateColumns: "1fr repeat(3, 1fr)",
-            gap: "40px",
-            margin: "40px 0 40px 100px",
-          }}
-        >
-          {filteredPost.length &&
-            filteredPost.map((post) => {
-              return <HomeCard item={post} />;
-            })}
-        </Box>
-      </Box>
-    );
-  } else if (filterBy) {
-    return (
-      <Box>
-        <Nav />
-        <Box
-          style={{ display: "flex", justifyContent: "center", color: "gray" }}
-        >
-          <h1>No data found for applied filter</h1>
-        </Box>
-      </Box>
-    );
-  }
+    setSearchedPost(result);
+  }, [searchText, posts]);
 
-  return (
-    <Box>
-      <Nav />
-      {isSearchOpen && <SearchComponent findSearchText={sendSearchText} />}
-      {loader && (
+  // ================================
+  // Filter Posts
+  // ================================
+
+  useEffect(() => {
+    if (!filterBy) {
+      setFilteredPost([]);
+      return;
+    }
+
+    const category = String(filterBy).toLowerCase();
+
+    const result = posts.filter((item) => {
+      const itemCategory = String(
+        item?.category || ""
+      ).toLowerCase();
+
+      return itemCategory.includes(category);
+    });
+
+    setFilteredPost(result);
+  }, [filterBy, posts]);
+
+  // ================================
+  // Sort Posts
+  // ================================
+
+  const sortedPosts = [...posts].sort(
+    (a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+  );
+
+  const sortedSearchedPost = [
+    ...searchedPost,
+  ].sort(
+    (a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+  );
+
+  const sortedFilteredPost = [
+    ...filteredPost,
+  ].sort(
+    (a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+  );
+
+  // ================================
+  // Responsive Grid
+  // ================================
+
+  const postGridSx = {
+    width: "100%",
+    maxWidth: "1400px",
+
+    margin: "40px auto",
+
+    padding: {
+      xs: "0 16px",
+      sm: "0 24px",
+      md: "0 30px",
+      lg: "0 40px",
+    },
+
+    boxSizing: "border-box",
+
+    display: "grid",
+
+    gridTemplateColumns: {
+      xs: "1fr",
+      sm: "repeat(2, minmax(0, 1fr))",
+      md: "repeat(2, minmax(0, 1fr))",
+      lg: "repeat(3, minmax(0, 1fr))",
+      xl: "repeat(4, minmax(0, 1fr))",
+    },
+
+    gap: {
+      xs: "20px",
+      sm: "24px",
+      md: "28px",
+      lg: "32px",
+    },
+  };
+
+  // ================================
+  // Loading
+  // ================================
+
+  if (loader) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          overflowX: "hidden",
+        }}
+      >
+        <Nav />
+
         <Box
           sx={{
-            width: "80vw",
-            margin: "0 auto",
+            minHeight: "300px",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <CircularProgress />{" "}
+          <CircularProgress />
         </Box>
-      )}
-      {searchedPost ? (
-        searchedPost.length > 0 ? (
-          <Box
-            sx={{
-              maxWidth: "90vw",
-              marginLeft: "100px",
-              display: "grid",
-              gridTemplateColumns: "1fr repeat(3, 1fr)",
-              gap: "40px",
-              margin: "40px 0 40px 100px",
-            }}
-          >
-            {searchedPost.map((item, index) => {
-              return <HomeCard item={item} />;
-            })}
+      </Box>
+    );
+  }
+
+  // ================================
+  // Filtered Posts
+  // ================================
+
+  if (filterBy) {
+    setSearchOpenClose(false);
+
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          overflowX: "hidden",
+        }}
+      >
+        <Nav />
+
+        {sortedFilteredPost.length > 0 ? (
+          <Box sx={postGridSx}>
+            {sortedFilteredPost.map(
+              (post, index) => (
+                <HomeCard
+                  item={post}
+                  key={post?._id || index}
+                />
+              )
+            )}
           </Box>
         ) : (
           <Box
-            style={{ display: "flex", justifyContent: "center", color: "gray" }}
+            sx={{
+              minHeight: "300px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
+              padding: "20px",
+            }}
           >
-            <h1>There is no such item which you search!!</h1>
+            <Typography
+              sx={{
+                color: "gray",
+                fontSize: {
+                  xs: "20px",
+                  sm: "24px",
+                  md: "28px",
+                },
+              }}
+            >
+              No data found for applied filter
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    );
+  }
+
+  // ================================
+  // Home
+  // ================================
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        overflowX: "hidden",
+      }}
+    >
+      <Nav />
+
+      {/* Search Component */}
+
+      {isSearchOpen && (
+        <SearchComponent
+          findSearchText={sendSearchText}
+        />
+      )}
+
+      {/* ================================
+          Search Results
+      ================================= */}
+
+      {String(searchText || "").trim() ? (
+        sortedSearchedPost.length > 0 ? (
+          <Box sx={postGridSx}>
+            {sortedSearchedPost.map(
+              (post, index) => (
+                <HomeCard
+                  item={post}
+                  key={post?._id || index}
+                />
+              )
+            )}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              minHeight: "300px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
+              padding: "20px",
+            }}
+          >
+            <Typography
+              sx={{
+                color: "gray",
+                fontSize: {
+                  xs: "20px",
+                  sm: "24px",
+                  md: "28px",
+                },
+              }}
+            >
+              There is no such item which you
+              searched!!
+            </Typography>
           </Box>
         )
       ) : (
-        <Box
-          sx={{
-            maxWidth: "90vw",
-            marginLeft: "100px",
-            display: "grid",
-            gridTemplateColumns: "1fr repeat(3, 1fr)",
-            gap: "40px",
-            margin: "40px 0 40px 100px",
-          }}
-        >
-          {posts.length &&
-            posts.map((post, index) => {
-              // return <Post key={index} {...post} />;
-              return <HomeCard item={post} key={index} />;
-            })}
+        /* ================================
+           All Posts
+        ================================= */
+
+        <Box sx={postGridSx}>
+          {sortedPosts.map((post, index) => (
+            <HomeCard
+              item={post}
+              key={post?._id || index}
+            />
+          ))}
         </Box>
       )}
     </Box>
